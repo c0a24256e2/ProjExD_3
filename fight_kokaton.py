@@ -140,6 +140,34 @@ class Bomb:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
+class Explosion:
+    """
+    爆発エフェクトに関するクラス
+    """
+    def __init__(self, bomb: "Bomb"):
+              
+        img = pg.image.load("fig/explosion.gif")
+        self.imgs = [img, pg.transform.flip(img, True, True)]
+        self.img = self.imgs[0] # デフォルトは最初の画像
+        self.rct = self.img.get_rect()
+        # 爆発した爆弾のrct.centerに座標を設定
+        self.rct.center = bomb.rct.center
+        # 表示時間（爆発時間）life
+        self.life = 30 # 爆発の持続時間
+
+    def update(self, screen: pg.Surface):
+        """
+        爆発エフェクトを更新し、画面に描画する
+        引数 screen：画面Surface
+        """
+        self.life -= 1  # 爆発経過時間lifeを1減算
+        
+        # 爆発経過時間lifeが正なら，Surfaceリストを交互に切り替えて爆発を演出
+        if self.life > 0:
+            # lifeの偶数・奇数で画像を切り替える
+            self.img = self.imgs[self.life // 3 % 2]
+            screen.blit(self.img, self.rct)
+
 class Score:
     """
     スコアに関するクラス
@@ -178,7 +206,8 @@ def main():
     #     bombs = Bomb((255, 0, 0), 10)
     bombs = [Bomb((255, 0, 0), 10) for _ in range(NUM_OF_BOMBS)]
     beam = None  # ゲーム初期化時にはビームは存在しない
-    beams = []
+    beams = []  # 複数ビーム用の空のリスト
+    explosions = []  # 爆発用の空のリスト
     clock = pg.time.Clock()
     tmr = 0
     score = Score()
@@ -204,14 +233,17 @@ def main():
                 return
             
         for i, bomb in enumerate(bombs):    
-            if beam is not None:
-                 if bomb is not None and beam.rct.colliderect(bomb.rct):
-                    beam = None
-                    bombs[i] = None
-                    bird.change_img(6, screen)
-                    score.add_score(1)
+            for beam in beams:
+                if bomb is not None and beam is not None:
+                    if beam.rct.colliderect(bomb.rct):
+                        explosions.append(Explosion(bomb)) # 爆発エフェクトを生成
+                        beam = None
+                        bombs[i] = None
+                        bird.change_img(6, screen)
+                        score.add_score(1)
         bombs = [bomb for bomb in bombs if bomb is not None]
         beams = [beam for beam in beams if beam is not None and check_bound(beam.rct) == (True, True)]
+        explosions = [exp for exp in explosions if exp.life > 0]
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
@@ -219,6 +251,8 @@ def main():
             beam.update(screen) 
         for bomb in bombs:  
             bomb.update(screen)
+        for exp in explosions:
+            exp.update(screen)
         score.update(screen)
         pg.display.update()
         tmr += 1
