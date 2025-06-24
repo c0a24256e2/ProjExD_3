@@ -3,6 +3,7 @@ import random
 import sys
 import time
 import pygame as pg
+import math
 
 
 WIDTH = 1100  # ゲームウィンドウの幅
@@ -165,7 +166,7 @@ class Explosion:
         # 爆発経過時間lifeが正なら，Surfaceリストを交互に切り替えて爆発を演出
         if self.life > 0:
             # lifeの偶数・奇数で画像を切り替える
-            self.img = self.imgs[self.life // 3 % 2]
+            self.img = self.imgs[self.life // 4 % 2]  # 4フレームごとに切り替え
             screen.blit(self.img, self.rct)
 
 class Score:
@@ -177,7 +178,7 @@ class Score:
         self.color = (0, 0, 255)
         self.score = 0
         self.img = self.fonto.render(f"スコア:{self.score}", 0, self.color)
-        self.rct = self.img.get_rect()
+        self.rct = self.img.get_rect()  # スコアテキストのRectを取得
         self.rct.center = 100, HEIGHT - 50
 
     def update(self, screen:pg.Surface):
