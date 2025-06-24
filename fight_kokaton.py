@@ -140,6 +140,7 @@ class Bomb:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
+
 class Explosion:
     """
     爆発エフェクトに関するクラス
@@ -167,6 +168,7 @@ class Explosion:
             # lifeの偶数・奇数で画像を切り替える
             self.img = self.imgs[self.life // 3 % 2]
             screen.blit(self.img, self.rct)
+
 
 class Score:
     """
@@ -242,7 +244,7 @@ def main():
                         bird.change_img(6, screen)
                         score.add_score(1)
         bombs = [bomb for bomb in bombs if bomb is not None]
-        beams = [beam for beam in beams if beam is not None and check_bound(beam.rct) == (True, True)]
+        beams = [beam for beam in beams if beam is not None and check_bound(beam.rct) == (True, True)]  # Noneになったビーム/画面外ビーム/終了した爆発を除去
         explosions = [exp for exp in explosions if exp.life > 0]
 
         key_lst = pg.key.get_pressed()
